@@ -1,0 +1,30 @@
+<!--로그인 홈 html 입니다.-->
+<!DOCTYPE HTML>
+<!-- 타임리프를 사용하기 위한 설정이다 -->
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <!--부트스트랩 css를 사용하여 사이트를 깔끔하게 만든다 -->
+    <link th:href="@{/css/bootstrap.min.css}"
+          href="css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="container" style="max-width: 600px">
+    <div class="py-5 text-center">
+        <h2>홈 화면</h2>
+        <!-- 현재 로그인하고 있는 사용자의 id를 출력한다 -->
+        <h4 th:text="|환영합니다. ${member.id}|"></h4>
+    </div>
+    <div class="row">
+        <div class="col">
+            <!-- 채팅방 입장 버튼이다. 클릭시 /chatting/chat으로 Get 요청을 전송한다 -->
+            <button class="w-100 btn btn-secondary btn-lg" type="button"
+                    th:onclick="|location.href='@{/chatting/chat}'|">
+                채팅방 입장
+            </button>
+        </div>
+    </div>
+    <hr class="my-4">
+</div> <!-- /container -->
+</body>
+</html>

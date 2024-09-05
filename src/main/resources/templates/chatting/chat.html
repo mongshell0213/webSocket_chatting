@@ -1,0 +1,104 @@
+<!-- 채팅방 html입니다.-->
+<!DOCTYPE HTML>
+<!-- 타임리프를 사용하기 위한 설정이다 -->
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<html>
+<head>
+    <!-- 자바스크립트와 jquery를 사용하기 위한 설정이다. -->
+    <script
+            type="text/javascript"
+            th:src="@{https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js}">
+    </script>
+    <!--부트스트랩 css를 사용하여 사이트를 깔끔하게 만든다 -->
+    <link rel="stylesheet"
+          th:href="@{/css/bootstrap.min.css}"
+          href="css/bootstrap.min.css">
+    <meta charset="UTF-8">
+    <title>채팅</title>
+    <!-- 채팅 공간의 스타일 설정-->
+    <style>
+        .chating{
+            background-color: #000;
+            width: 500px;
+            height: 500px;
+            overflow: auto;
+        }
+        .chating p{
+            color: #fff;
+            text-align: left;
+        }
+    </style>
+</head>
+<div id="userName" th:data-userName="${member.id}" style="display:none;"></div>
+<script type="text/javascript">
+    var ws; //웹 소켓 세션을 위한 변수이다
+    $(document).ready(function(){
+        wsOpen(); //문서가 준비되면 실행한다
+    });
+
+    $(document).addEventListener("DOMContentLoaded", function(){
+        var logoutButton = document.getElementById("logoutButton"); //로그아웃 버튼을 변수로 설정한다
+
+        logoutButton.addEventListener("click",function(event){
+            if(ws && ws.readyState === WebSocket.OPEN){ //웹 소켓 세션이 있거나 열려있는 상태라면
+                ws.close(); //웹 소켓 세션을 닫아준다
+            }
+        });
+    });
+
+    function wsOpen(){ //웹 소켓 세션을 여는 함수
+        if(!ws || ws.readyState === WebSocket.CLOSED){ //웹 소켓 세션이 없거나 닫혀있는 상태라면
+            ws = new WebSocket("ws://" + location.host + "/chatting/chat1"); //새로운 웹 소켓 세션을 생성한다.
+            console.log(ws.readyState); //로그를 출력한다
+        }
+        wsEvt(); //채팅을 출력하기 위한 함수를 실행한다
+    }
+
+    function wsEvt(){
+        ws.onmessage = function(data){ //웹 소켓을 통해 메시지를 받을 때 호출될 이벤트 핸들러이다.
+            var msg = data.data; //data객체의 data에서 메시지를 가져온다
+            if(msg != null && msg.trim() != ''){ //null이 아니고 공백이 아니면
+                $("#chating").append("<p>" + msg +"</p>"); //채팅창에 메시지를 출력한다
+            }
+        }
+
+        document.addEventListener("keypress",function(e){ //키보드가 눌릴 때마다 호출되는 이벤트 리스너이다.
+            if(e.keyCode == 13){ //만약 엔터가 입력되면
+                send(); //메시지를 전송한다
+            }
+        });
+    }
+
+    function send(){
+        var msg = $("#messageInput").val(); //html 문서에서 id가 messageInput인 요소의 현재 값을 가져와서 저장합니다
+        ws.send(msg); //메시지를 전송합니다
+        $('#messageInput').val(""); //messageInput 필드의 값을 비웁니다
+    }
+</script>
+<body>
+    <div id="container" class="container">
+        <!-- 현재 접속하고 있는 사용자의 아이디를 출력합니다 -->
+        <h4 class="mb-3" th:text="|로그인: ${member.id}|">로그인 멤버 아이디</h4>
+        <div>
+            <!-- 로그아웃 버튼입니다. 클릭 시 /logout으로 post 요청이 전송됩니다. -->
+            <form th:action="@{/logout}" method="post" >
+                <button type="submit" id="logoutButton">로그아웃</button>
+            </form>
+        </div>
+        <!-- 채팅창 공간입니다. 메시지가 출력되는 공간입니다. -->
+        <h1>채팅</h1>
+        <div id="chating" class="chating"></div>
+
+        <div id="yourMsg">
+            <table>
+                <tr>
+                    <th>메시지</th>
+                    <!-- 텍스트 박스와 이를 전송하는 버튼입니다. 버튼을 클릭시 위의 send() 함수가 실행됩니다. -->
+                    <th><input class="form-control form-control-sm" type="text" id="messageInput" placeholder="보내실 메시지를 입력하세요."></th>
+                    <th><button class="btn btn-sm btn-primary" onclick="send()" id="sendBtn">보내기</button></th>
+                </tr>
+            </table>
+        </div>
+    </div>
+</body>
+</html>
